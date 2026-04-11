@@ -1,8 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Build.BackEnd.Logging;
+using Microsoft.Build.Framework.Telemetry;
 
 namespace Microsoft.Build.TelemetryInfra;
 
@@ -14,18 +14,13 @@ internal interface ITelemetryForwarder
 {
     bool IsTelemetryCollected { get; }
 
-    void AddTask(string name, TimeSpan cumulativeExecutionTime, short executionsCount, long totalMemoryConsumed, bool isCustom,
-        bool isFromNugetCache);
+    /// <summary>
+    /// Merges a batch of telemetry data into this forwarder's accumulated state.
+    /// </summary>
+    void MergeWorkerData(IWorkerNodeTelemetryData data);
 
     /// <summary>
-    /// Add info about target execution to the telemetry.
+    /// Sends accumulated telemetry and resets internal state.
     /// </summary>
-    /// <param name="name"></param>
-    /// <param name="wasExecuted">Means anytime, not necessarily from the last time target was added to telemetry</param>
-    /// <param name="isCustom"></param>
-    /// <param name="isMetaproj"></param>
-    /// <param name="isFromNugetCache"></param>
-    void AddTarget(string name, bool wasExecuted, bool isCustom, bool isMetaproj, bool isFromNugetCache);
-
     void FinalizeProcessing(LoggingContext loggingContext);
 }
