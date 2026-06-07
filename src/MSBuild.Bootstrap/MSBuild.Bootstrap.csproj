@@ -25,9 +25,9 @@
   <ItemGroup>
     <!-- This file is needed so the dotnet CLI knows how to map preview SDK versions to tfms (because tfms do not have preview information on them) -->
     <!-- This is because according to semver, 2.1.0-preview is not >= 2.1.0 -->
-    <Content Include="$(DotNetRoot)sdk\$(DotNetCliVersion)\Microsoft.NETCoreSdk.BundledVersions.props" 
+    <Content Include="$(DotNetRoot)/sdk/$(DotNetCliVersion)/Microsoft.NETCoreSdk.BundledVersions.props" 
              CopyToOutputDirectory="PreserveNewest" 
-             Condition="Exists('$(DotNetRoot)sdk\$(DotNetCliVersion)\Microsoft.NETCoreSdk.BundledVersions.props')" />
+             Condition="Exists('$(DotNetRoot)/sdk/$(DotNetCliVersion)/Microsoft.NETCoreSdk.BundledVersions.props')" />
 
     <!-- Include NuGet build tasks -->
     <PackageReference Include="NuGet.Build.Tasks" />
