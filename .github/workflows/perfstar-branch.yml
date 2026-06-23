@@ -16,11 +16,6 @@ jobs:
       contains(fromJSON('["COLLABORATOR", "MEMBER", "OWNER"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Get PR information
         id: pr_info
         run: |
@@ -36,13 +31,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Checkout repository at immutable PR head SHA
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.repository.full_name }}
+          ref: ${{ steps.pr_info.outputs.pr_head_sha }}
+          fetch-depth: 0
+
       - name: Create and push perf branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Ensure we can access the PR's commits (especially important for forks)
-          git fetch origin pull/${{ github.event.issue.number }}/head:pr-${{ github.event.issue.number }}-head
+
+          # Re-validate PR head SHA to prevent TOCTOU between check and use
+          CURRENT_HEAD_SHA=$(gh pr view ${{ github.event.issue.number }} --json headRefOid -q '.headRefOid')
+          if [ "$CURRENT_HEAD_SHA" != "${{ steps.pr_info.outputs.pr_head_sha }}" ]; then
+            echo "PR head changed from ${{ steps.pr_info.outputs.pr_head_sha }} to $CURRENT_HEAD_SHA; aborting."
+            exit 1
+          fi
           
           # Create branch from PR head
           git checkout -b ${{ steps.pr_info.outputs.new_branch_name }} ${{ steps.pr_info.outputs.pr_head_sha }}
@@ -53,3 +59,5 @@ jobs:
           
           # Push branch
           git push origin ${{ steps.pr_info.outputs.new_branch_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
