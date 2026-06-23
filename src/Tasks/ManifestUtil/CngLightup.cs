@@ -265,7 +265,7 @@ namespace System.Security.Cryptography
             // method requires types that aren't in 4.5, try RSACryptoServiceProvider's way first.
             if (rsa is RSACryptoServiceProvider rsaCsp)
             {
-                return rsaCsp.Encrypt(data, false);
+                return rsaCsp.Encrypt(data, true);
             }
 
             if (s_rsaPkcs1EncryptMethod == null)
@@ -288,7 +288,7 @@ namespace System.Security.Cryptography
             // method requires types that aren't in 4.5, try RSACryptoServiceProvider's way first.
             if (rsa is RSACryptoServiceProvider rsaCsp)
             {
-                return rsaCsp.Decrypt(data, false);
+                return rsaCsp.Decrypt(data, true);
             }
 
             if (s_rsaPkcs1DecryptMethod == null)
