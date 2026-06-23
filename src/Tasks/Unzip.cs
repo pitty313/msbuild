@@ -177,6 +177,7 @@ namespace Microsoft.Build.Tasks
         private void Extract(ZipArchive sourceArchive, DirectoryInfo destinationDirectory)
         {
             AbsolutePath fullDestinationDirectoryPath = TaskEnvironment.GetAbsolutePath(FileUtilities.EnsureTrailingSlash(destinationDirectory.FullName)).GetCanonicalForm();
+            string fullDestinationDirectoryPathString = Path.GetFullPath(fullDestinationDirectoryPath.Value);
 
             foreach (ZipArchiveEntry zipArchiveEntry in sourceArchive.Entries.TakeWhile(i => !_cancellationToken.IsCancellationRequested))
             {
@@ -186,10 +187,10 @@ namespace Microsoft.Build.Tasks
                     continue;
                 }
 
-                AbsolutePath fullDestinationPath = TaskEnvironment.GetAbsolutePath(Path.Combine(destinationDirectory.FullName, zipArchiveEntry.FullName)).GetCanonicalForm();
-                ErrorUtilities.VerifyThrowInvalidOperation(fullDestinationPath.Value.StartsWith(fullDestinationDirectoryPath, FileUtilities.PathComparison), "Unzip.ZipSlipExploit", fullDestinationPath);
+                string fullDestinationPathString = Path.GetFullPath(Path.Combine(fullDestinationDirectoryPathString, zipArchiveEntry.FullName));
+                ErrorUtilities.VerifyThrowInvalidOperation(fullDestinationPathString.StartsWith(fullDestinationDirectoryPathString, FileUtilities.PathComparison), "Unzip.ZipSlipExploit", fullDestinationPathString);
 
-                FileInfo destinationPath = new(fullDestinationPath);
+                FileInfo destinationPath = new(fullDestinationPathString);
 
                 // Zip archives can have directory entries listed explicitly.
                 // If this entry is a directory we should create it and move to the next entry.
@@ -200,7 +201,7 @@ namespace Microsoft.Build.Tasks
                     continue;
                 }
 
-                if (!destinationPath.FullName.StartsWith(destinationDirectory.FullName, StringComparison.OrdinalIgnoreCase))
+                if (!destinationPath.FullName.StartsWith(fullDestinationDirectoryPathString, FileUtilities.PathComparison))
                 {
                     // ExtractToDirectory() throws an IOException for this but since we're extracting one file at a time
                     // for logging and cancellation, we need to check for it ourselves.
